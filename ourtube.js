@@ -13,9 +13,8 @@ var webrtc = new SimpleWebRTC({
 
 // div
 var create = document.getElementById('create')
+var roomUrl = document.getElementById('roomUrl')
 var send = document.getElementById('send')
-
-
 
 // 接続開始時
 webrtc.on('createdPeer', function (peer) {
@@ -23,15 +22,16 @@ webrtc.on('createdPeer', function (peer) {
 
   // 送信処理
   send.addEventListener('click', function () {
-    console.log('going to send')
-    webrtc.sendDirectlyToAll('chat', 'message', {'bar': 'hello world'})
-    console.log('sent')
+    webrtc.sendDirectlyToAll('chat', 'message', {'seek': '873'})
   })
 })
 
 // メッセージ受信処理
 webrtc.on('channelMessage', function (peer, label, data) {
   console.log('received', peer, label, data)
+  if (label === 'chat') {
+    console.log('seek to', data.payload.seek)
+  }
 })
 
 // エラーハンドル
@@ -49,7 +49,6 @@ function init () {
   // roomはurlから取得
   // room idはリンクにくっついてる
   var room = location.search && location.search.split('?')[1]
-  console.log(room)
 
   if (room) {
     // 既存のroomに入る
@@ -58,12 +57,13 @@ function init () {
     });
   } else {
     // 新規room作成
-    var val = '';
+    var val = '';  // 名前で指定があればこれを使える
     create.addEventListener('click', function () {
-      console.log('clicked')
       webrtc.createRoom(val, function (err, name) {
         if (!err) {
-          console.log('created', name, location.pathname + '?' + name)
+          var newUrl = location.pathname + '?' + name
+          history.replaceState(null, null, newUrl)
+          console.log('created', name, 'share', location.href)
         }
       })
     }, false);
